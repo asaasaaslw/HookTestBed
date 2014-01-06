@@ -1,0 +1,119 @@
+[Version]
+signature="$CHICAGO$"
+Class= LAUSDEVICE
+ClassGUID= {224178B3-4093-46E8-9B05-89EB9952C32F}
+Provider=%Msft%
+DriverVer=12/11/2013,16.40.33.902
+
+[SourceDisksNames]
+1=%cdname%,,,
+
+[SourceDisksFiles]
+WDMDriverTest.sys=1
+
+
+[DestinationDirs]
+ArcVCam.CopyDrivers=12
+CoinstCopyFiles=11
+ArcVCam.inf.CopyDrivers=11
+PREDELETE=11
+
+
+[DefaultInstall]
+DelFiles=PREDELETE
+CopyFiles=ArcVCam.inf.CopyDrivers
+AddReg=ArcVCam.RunOnce.AddReg
+
+[ArcVCam.inf.CopyDrivers]
+
+
+[PREDELETE]
+
+
+[ArcVCam.RunOnce.AddReg]
+
+
+[ArcVCam.CopyDrivers]
+WDMDriverTest.sys
+
+
+;---------------------------------------------------------------
+;                ArcVirtualCam  I n s t a l l
+;---------------------------------------------------------------
+
+[Manufacturer]
+%Msft%=ArcSoft,NTamd64
+
+[ArcSoft]
+%ArcVirtualCam.FriendlyName%=ArcVirtualCam,ArcSoftVirtualCamera
+
+[ArcSoft.NTamd64]
+%ArcVirtualCam.FriendlyName%=ArcVirtualCam,ArcSoftVirtualCamera
+
+;---------------------------------------------------------------
+;                x 86  D D I n s t a l l
+;---------------------------------------------------------------
+
+[ArcVirtualCam.NT]
+Include=ks.inf, KSCAPTUR.inf
+Needs=KS.Registration,KSCAPTUR.Registration.NT
+CopyFiles= ArcVCam.CopyDrivers
+
+;---------------------------------------------------------------
+;                I n t e r f a c e s
+;---------------------------------------------------------------
+
+[ArcVirtualCam.NT.Interfaces]
+AddInterface=%KSCATEGORY_CAPTURE%,"GLOBAL",CaptureInterface.NT,
+AddInterface=%KSCATEGORY_VIDEO%,"GLOBAL",CaptureInterface.NT,
+AddInterface=%KSCATEGORY_VIDEO_CAMERA%,"GLOBAL",CaptureInterface.NT,
+
+[CaptureInterface.NT]
+AddReg=ArcVirtualCam.AddReg
+
+;---------------------------------------------------------------
+;                A d d R e g
+;---------------------------------------------------------------
+
+[ArcVirtualCam.AddReg]
+HKR,,CLSID,,%Proxy.CLSID%
+HKR,,FriendlyName,,%ArcVirtualCam.FriendlyName%
+HKR,,RTCFlags,0x00010001,0x00000010
+HKR,,CameraPostProcessingPluginCLSID,,"{D05E3F15-9409-476D-9134-6C1A160B14AE}"
+
+;---------------------------------------------------------------
+;                S e r v i c e s  
+;---------------------------------------------------------------
+
+[ArcVirtualCam.NT.Services]
+AddService=ArcVCamServices, 0x00000002, ArcVirtualCam.ServiceInstall
+
+[ArcVirtualCam.ServiceInstall]
+DisplayName=%ArcVirtualCam.DeviceDesc%
+ServiceType=%SERVICE_KERNEL_DRIVER%
+StartType=%SERVICE_DEMAND_START%
+ErrorControl=%SERVICE_ERROR_NORMAL%
+ServiceBinary=%12%\ArcVCam.sys
+
+;---------------------------------------------------------------
+;                S t r i n g s
+;---------------------------------------------------------------
+
+[Strings]
+; non-localizable
+Proxy.CLSID="{17CCA71B-ECD7-11D0-B908-00A0C9223196}"
+KSCATEGORY_CAPTURE="{65E8773D-8F56-11D0-A3B9-00A0C9223196}"
+KSCATEGORY_VIDEO="{6994AD05-93EF-11D0-A3CC-00A0C9223196}"
+KSCATEGORY_VIDEO_CAMERA="{E5323777-F976-4f5b-9B55-B94699C46E44}"
+
+SERVICE_KERNEL_DRIVER=1
+SERVICE_DEMAND_START=3
+SERVICE_ERROR_NORMAL=1
+REG_DWORD=0x00010001
+
+;localizable
+Msft="Laus"
+ArcVirtualCam.DeviceDesc="ArcVCamServices, ArcSoft Webcam Sharing Manager Driver11"
+ArcVirtualCam.FriendlyName="WDMDriverTest"
+cdname="Install Disk"
+RunOnce="SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce"

@@ -1,0 +1,31 @@
+;
+; WDMDriverTest.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class= LAUSDEVICE
+ClassGuid= {06344131-05BE-4ED1-99C5-F2311BD5EDEE}
+Provider= LAUSW
+DriverVer=12/11/2013,15.30.5.390
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+
+
+[Manufacturer]
+%ManufacturerName%=Standard,NTx86
+
+[Standard.NTx86]
+
+
+[Strings]
+ManufacturerName=""
+ClassName=""
+DiskName="WDMDriverTest Source Disk"

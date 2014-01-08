@@ -18,19 +18,19 @@ _TEXT	SEGMENT
 _pointer$ = 8						; size = 4
 ??3@YAXPAX@Z PROC					; operator delete, COMDAT
 
-; 22   : {
+; 26   : {
 
 	npad	2
 	push	ebp
 	mov	ebp, esp
 
-; 23   : 	ExFreePool(pointer);
+; 27   : 	ExFreePool(pointer);
 
 	mov	eax, DWORD PTR _pointer$[ebp]
 	push	eax
 	call	DWORD PTR __imp__ExFreePool@4
 
-; 24   : }
+; 28   : }
 
 	pop	ebp
 	ret	0

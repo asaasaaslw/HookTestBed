@@ -535,20 +535,20 @@ _String$ = 8						; size = 4
 _SubString$ = 12					; size = 4
 ?FindSubString@@YGEPAU_UNICODE_STRING@@0@Z PROC		; FindSubString, COMDAT
 
-; 59   : {
+; 67   : {
 
 	npad	2
 	push	ebp
 	mov	ebp, esp
 	push	ecx
 
-; 60   : 	ULONG index;
-; 61   : 
-; 62   : 	//
-; 63   : 	//  First, check to see if the strings are equal.
-; 64   : 	//
-; 65   : 
-; 66   : 	if (RtlEqualUnicodeString( String, SubString, TRUE )) {
+; 68   : 	ULONG index;
+; 69   : 
+; 70   : 	//
+; 71   : 	//  First, check to see if the strings are equal.
+; 72   : 	//
+; 73   : 
+; 74   : 	if (RtlEqualUnicodeString( String, SubString, TRUE )) {
 
 	push	1
 	mov	eax, DWORD PTR _SubString$[ebp]
@@ -560,29 +560,29 @@ _SubString$ = 12					; size = 4
 	test	edx, edx
 	je	SHORT $LN5@FindSubStr
 
-; 67   : 
-; 68   : 		return TRUE;
+; 75   : 
+; 76   : 		return TRUE;
 
 	mov	al, 1
 	jmp	SHORT $LN6@FindSubStr
 $LN5@FindSubStr:
 
-; 69   : 	}
-; 70   : 
-; 71   : 	//
-; 72   : 	//  String and SubString aren't equal, so now see if SubString
-; 73   : 	//  in in String any where.
-; 74   : 	//
-; 75   : 	for (index = 0;
+; 77   : 	}
+; 78   : 
+; 79   : 	//
+; 80   : 	//  String and SubString aren't equal, so now see if SubString
+; 81   : 	//  in in String any where.
+; 82   : 	//
+; 83   : 	for (index = 0;
 
 	mov	DWORD PTR _index$[ebp], 0
 
-; 76   : 		index + SubString->Length <= String->Length;
+; 84   : 		index + SubString->Length <= String->Length;
 
 	jmp	SHORT $LN4@FindSubStr
 $LN3@FindSubStr:
 
-; 77   : 		index++) {
+; 85   : 		index++) {
 
 	mov	eax, DWORD PTR _index$[ebp]
 	add	eax, 1
@@ -596,9 +596,9 @@ $LN4@FindSubStr:
 	cmp	edx, ecx
 	ja	SHORT $LN2@FindSubStr
 
-; 78   : 			if (_wcsnicmp(&(String->Buffer[index]),
-; 79   : 				SubString->Buffer,
-; 80   : 				SubString->Length) == 0) {
+; 86   : 			if (_wcsnicmp(&(String->Buffer[index]),
+; 87   : 				SubString->Buffer,
+; 88   : 				SubString->Length) == 0) {
 
 	mov	edx, DWORD PTR _SubString$[ebp]
 	movzx	eax, WORD PTR [edx]
@@ -616,28 +616,28 @@ $LN4@FindSubStr:
 	test	eax, eax
 	jne	SHORT $LN1@FindSubStr
 
-; 81   : 					//
-; 82   : 					//  SubString is found in String, so return TRUE.
-; 83   : 					//
-; 84   : 					return TRUE;
+; 89   : 					//
+; 90   : 					//  SubString is found in String, so return TRUE.
+; 91   : 					//
+; 92   : 					return TRUE;
 
 	mov	al, 1
 	jmp	SHORT $LN6@FindSubStr
 $LN1@FindSubStr:
 
-; 85   : 			}
-; 86   : 	}
+; 93   : 			}
+; 94   : 	}
 
 	jmp	SHORT $LN3@FindSubStr
 $LN2@FindSubStr:
 
-; 87   : 
-; 88   : 	return FALSE;
+; 95   : 
+; 96   : 	return FALSE;
 
 	xor	al, al
 $LN6@FindSubStr:
 
-; 89   : }
+; 97   : }
 
 	mov	esp, ebp
 	pop	ebp
@@ -650,34 +650,36 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?PageOff@@YGXXZ PROC					; PageOff, COMDAT
 
-; 41   : {
+; 47   : {
 
 	npad	2
 	push	ebp
 	mov	ebp, esp
 
-; 42   : #ifdef _X86_
-; 43   : 	__asm
-; 44   : 	{
-; 45   : 		cli ;//将处理器标志寄存器的中断标志位清0，不允许中断
+; 48   : #ifdef _X86_
+; 49   : 	__asm
+; 50   : 	{
+; 51   : 		cli ;//将处理器标志寄存器的中断标志位清0，不允许中断
 
 	cli
 
-; 46   : 		mov eax, cr0
+; 52   : 		mov eax, cr0
 
 	mov	eax, cr0
 
-; 47   : 		and  eax, ~0x10000
+; 53   : 		and  eax, ~0x10000
 
 	and	eax, -65537				; fffeffffH
 
-; 48   : 		mov cr0, eax
+; 54   : 		mov cr0, eax
 
 	mov	cr0, eax
 
-; 49   : 	}
-; 50   : #endif 
-; 51   : }
+; 55   : 	}
+; 56   : #else ifdef(_AMD64_)
+; 57   : 	PageOff64_asm();
+; 58   : #endif 
+; 59   : }
 
 	pop	ebp
 	ret	0
@@ -689,35 +691,37 @@ _TEXT	ENDS
 _TEXT	SEGMENT
 ?PageOn@@YGXXZ PROC					; PageOn, COMDAT
 
-; 27   : {
+; 31   : {
 
 	npad	2
 	push	ebp
 	mov	ebp, esp
 
-; 28   : #ifdef _X86_
-; 29   : 	__asm
-; 30   : 	{
-; 31   : 		mov  eax, cr0
+; 32   : #ifdef _X86_
+; 33   : 	__asm
+; 34   : 	{
+; 35   : 		mov  eax, cr0
 
 	mov	eax, cr0
 
-; 32   : 		or     eax, 0x10000
+; 36   : 		or     eax, 0x10000
 
 	or	eax, 65536				; 00010000H
 
-; 33   : 		mov  cr0, eax
+; 37   : 		mov  cr0, eax
 
 	mov	cr0, eax
 
-; 34   : 		sti ;//将处理器标志寄存器的中断标志置1，允许中断
+; 38   : 		sti ;//将处理器标志寄存器的中断标志置1，允许中断
 
 	sti
 
-; 35   : 	}
-; 36   : #endif 
-; 37   : 	
-; 38   : }
+; 39   : 	}
+; 40   : #else ifdef(_AMD64_)
+; 41   : 	PageOn64_asm();
+; 42   : #endif 
+; 43   : 	
+; 44   : }
 
 	pop	ebp
 	ret	0
@@ -1604,19 +1608,19 @@ _TEXT	SEGMENT
 _pointer$ = 8						; size = 4
 ??3@YAXPAX@Z PROC					; operator delete, COMDAT
 
-; 22   : {
+; 26   : {
 
 	npad	2
 	push	ebp
 	mov	ebp, esp
 
-; 23   : 	ExFreePool(pointer);
+; 27   : 	ExFreePool(pointer);
 
 	mov	eax, DWORD PTR _pointer$[ebp]
 	push	eax
 	call	DWORD PTR __imp__ExFreePool@4
 
-; 24   : }
+; 28   : }
 
 	pop	ebp
 	ret	0

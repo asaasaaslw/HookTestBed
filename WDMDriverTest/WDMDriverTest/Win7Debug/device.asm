@@ -840,13 +840,13 @@ _size$ = 8						; size = 4
 _pagePool$ = 12						; size = 4
 ??2@YAPAXIW4_POOL_TYPE@@@Z PROC				; operator new, COMDAT
 
-; 17   : {
+; 21   : {
 
 	npad	2
 	push	ebp
 	mov	ebp, esp
 
-; 18   : 	return ExAllocatePool(pagePool, size);
+; 22   : 	return ExAllocatePool(pagePool, size);
 
 	mov	eax, DWORD PTR _size$[ebp]
 	push	eax
@@ -854,7 +854,7 @@ _pagePool$ = 12						; size = 4
 	push	ecx
 	call	DWORD PTR __imp__ExAllocatePool@8
 
-; 19   : }
+; 23   : }
 
 	pop	ebp
 	ret	0
@@ -1661,19 +1661,19 @@ _TEXT	SEGMENT
 _pointer$ = 8						; size = 4
 ??3@YAXPAX@Z PROC					; operator delete, COMDAT
 
-; 22   : {
+; 26   : {
 
 	npad	2
 	push	ebp
 	mov	ebp, esp
 
-; 23   : 	ExFreePool(pointer);
+; 27   : 	ExFreePool(pointer);
 
 	mov	eax, DWORD PTR _pointer$[ebp]
 	push	eax
 	call	DWORD PTR __imp__ExFreePool@4
 
-; 24   : }
+; 28   : }
 
 	pop	ebp
 	ret	0

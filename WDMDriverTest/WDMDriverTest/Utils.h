@@ -9,8 +9,12 @@ extern "C"
 }
 #endif 
 
-#define WIN_7_32BIT
+#ifdef _AMD64_
+	extern "C" void __fastcall PageOn64_asm();
+	extern "C" void __fastcall PageOff64_asm();
+#endif 
 
+#define WIN_7_32BIT
 #define EPROCESS_NAME_OFFSET 0x16c
 
 inline VOID * _cdecl operator new(size_t size, POOL_TYPE pagePool = PagedPool)
@@ -33,6 +37,8 @@ inline VOID PageOn()
 		mov  cr0, eax
 		sti ;//将处理器标志寄存器的中断标志置1，允许中断
 	}
+#else ifdef(_AMD64_)
+	PageOn64_asm();
 #endif 
 	
 }
@@ -47,6 +53,8 @@ inline VOID PageOff()
 		and  eax, ~0x10000
 		mov cr0, eax
 	}
+#else ifdef(_AMD64_)
+	PageOff64_asm();
 #endif 
 }
 

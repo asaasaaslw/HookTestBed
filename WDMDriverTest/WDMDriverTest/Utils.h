@@ -25,6 +25,7 @@ inline VOID _cdecl operator delete(VOID *pointer)
 
 inline VOID PageOn()
 {
+#ifdef _X86_
 	__asm
 	{
 		mov  eax, cr0
@@ -32,10 +33,13 @@ inline VOID PageOn()
 		mov  cr0, eax
 		sti ;//将处理器标志寄存器的中断标志置1，允许中断
 	}
+#endif 
+	
 }
 
 inline VOID PageOff()
 {
+#ifdef _X86_
 	__asm
 	{
 		cli ;//将处理器标志寄存器的中断标志位清0，不允许中断
@@ -43,6 +47,7 @@ inline VOID PageOff()
 		and  eax, ~0x10000
 		mov cr0, eax
 	}
+#endif 
 }
 
 inline 

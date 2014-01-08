@@ -44,4 +44,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <MASM Include="OriginalFun64_Asm.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
+    <MASM Include="Util64_Asm.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
+  </ItemGroup>
 </Project>

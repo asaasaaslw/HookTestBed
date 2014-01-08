@@ -1,0 +1,53 @@
+Microsoft (R) Macro Assembler (x64) Version 11.00.50727.1   01/08/14 15:15:23
+Util64.asm						     Page 1 - 1
+
+
+
+ 00000000			.data
+ 00000000			realVal dq 4 ; this stores a real number in 8 bytes
+	   0000000000000004
+
+ 00000000			.code
+
+ 00000000			PageOn64 PROC
+ 00000000  0F 20 C0			mov  rax, cr0
+ 00000003  48/ 0D			or   rax, 010000h
+	   00010000
+ 00000009  0F 22 C0			mov  cr0, rax
+ 0000000C  FB				sti
+ 0000000D  C3			    RET                             ; return
+ 0000000E			PageOn64 ENDP
+
+ 0000000E			PageOff64 PROC
+ 0000000E  FA				cli 
+ 0000000F  0F 20 C0			mov rax, cr0
+ 00000012  48/ 25			and rax, not 010000h
+	   FFFEFFFF
+ 00000018  0F 22 C0			mov cr0, rax
+ 0000001B  C3			    RET                             ; return
+ 0000001C			PageOff64 ENDP
+
+				End
+Microsoft (R) Macro Assembler (x64) Version 11.00.50727.1   01/08/14 15:15:23
+Util64.asm						     Symbols 2 - 1
+
+
+
+
+Procedures, parameters, and locals:
+
+                N a m e                 Type     Value    Attr
+
+PageOff64  . . . . . . . . . . .	P 	 0000000E _TEXT	Length= 0000000E Public
+PageOn64 . . . . . . . . . . . .	P 	 00000000 _TEXT	Length= 0000000E Public
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+WIN_X86  . . . . . . . . . . . .	Text   	 
+realVal  . . . . . . . . . . . .	QWord	 00000000 _DATA	
+
+	   0 Warnings
+	   0 Errors

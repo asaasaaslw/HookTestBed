@@ -2,12 +2,16 @@
 #include "Utils.h"
 #include <minwindef.h>
 
+
 /************************************************************************
  * ObReferenceObjectByHandle                                                       
 ************************************************************************/
 UCHAR  ObReferenceObjectByHandleOriginalBytes[5] = {0};             //保存原始函数前五个字节
 
-_declspec(naked) NTSTATUS OriginalObReferenceObjectByHandle(
+#ifdef _X86_
+	_declspec(naked)
+#endif // _X86_
+NTSTATUS OriginalObReferenceObjectByHandle(
 	_In_       HANDLE Handle,
 	_In_       ACCESS_MASK DesiredAccess,
 	_In_opt_   POBJECT_TYPE ObjectType,
@@ -16,6 +20,7 @@ _declspec(naked) NTSTATUS OriginalObReferenceObjectByHandle(
 	_Out_opt_  POBJECT_HANDLE_INFORMATION HandleInformation
 	)
 {
+#ifdef _X86_
 	_asm     
 	{         
 		mov edi,edi
@@ -25,6 +30,10 @@ _declspec(naked) NTSTATUS OriginalObReferenceObjectByHandle(
 		add eax,5
 		jmp eax                      
 	}
+#else ifdef _AMD64_
+	return STATUS_SUCCESS;
+#endif // _X86_
+	
 }
 
 NTSTATUS NewObReferenceObjectByHandle(
@@ -82,7 +91,10 @@ typedef NTSTATUS (*FunNtCreateUserProcessEx)(
 FunNtCreateUserProcessEx g_FunNtCreateProcess = NULL;
 UCHAR  NtCreateProcessOriginalBytes[5] = {0};             //保存原始函数前五个字节
 
-_declspec(naked) NTSTATUS
+#ifdef _X86_
+_declspec(naked)
+#endif // _X86_
+NTSTATUS
 OriginalNewNtCreateProcessEx(
 	PHANDLE ProcessHandle,
 	PHANDLE ThreadHandle,
@@ -97,6 +109,7 @@ OriginalNewNtCreateProcessEx(
 	PVOID pProcessUnKnow
 	)
 {
+#ifdef _X86_
 	_asm     
 	{         
 		push 6B8h
@@ -104,6 +117,10 @@ OriginalNewNtCreateProcessEx(
 		add eax,5
 		jmp eax                      
 	}
+#else ifdef _AMD64_
+	return STATUS_SUCCESS;
+#endif // _X86_
+	
 }
 
 NTSTATUS
@@ -191,7 +208,7 @@ BOOLEAN HookHelper::HookObReferenceObjectByHandle(PVOID *newFun)
 
 	
 	PageOff();
-	Irql=KeRaiseIrqlToDpcLevel();  //函数开头五个字节写JMP
+	KeRaiseIrql(DISPATCH_LEVEL, &Irql);  //函数开头五个字节写JMP
 	RtlCopyMemory((UCHAR *)ObReferenceObjectByHandle,JmpAddress,5);  
 	KeLowerIrql(Irql);
 	PageOn();
@@ -208,7 +225,7 @@ BOOLEAN HookHelper::UnHookObReferenceObjectByHandle()
 	KdPrint(("[%s] <----------------------\n", __FUNCTION__));  
 	KIRQL Irql;
 	PageOff();
-	Irql=KeRaiseIrqlToDpcLevel();  //函数开头五个字节写JMP
+	KeRaiseIrql(DISPATCH_LEVEL, &Irql); //函数开头五个字节写JMP
 	RtlCopyMemory((UCHAR *)ObReferenceObjectByHandle,ObReferenceObjectByHandleOriginalBytes,5);  
 	KeLowerIrql(Irql);
 	PageOn();
@@ -247,7 +264,7 @@ BOOLEAN HookHelper::HookNtCreateProcess(PVOID *newFun)
 
 
 	PageOff();
-	Irql=KeRaiseIrqlToDpcLevel();  
+	KeRaiseIrql(DISPATCH_LEVEL, &Irql);  
 	RtlCopyMemory((UCHAR *)g_FunNtCreateProcess,JmpAddress,5);  
 	KeLowerIrql(Irql);
 	PageOn();
@@ -263,7 +280,7 @@ BOOLEAN HookHelper::UnHookNtCreateProcess()
 	KdPrint(("[%s] <----------------------\n", __FUNCTION__));  
 	KIRQL Irql;
 	PageOff();
-	Irql=KeRaiseIrqlToDpcLevel();  //函数开头五个字节写JMP
+	KeRaiseIrql(DISPATCH_LEVEL, &Irql);  //函数开头五个字节写JMP
 	RtlCopyMemory((UCHAR *)g_FunNtCreateProcess,NtCreateProcessOriginalBytes,5);  
 	KeLowerIrql(Irql);
 	PageOn();

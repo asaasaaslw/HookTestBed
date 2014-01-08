@@ -5,7 +5,7 @@
 [Version]
 Signature="$CHICAGO$"
 Provider=Laus_Device
-DriverVer=01/08/2014,15.41.34.741
+DriverVer=01/08/2014,17.14.30.442
 
 ; If device fits one of the standard classes, use the name and GUID here,
 ; otherwise create your own device class and GUID as this example shows.

@@ -6,7 +6,7 @@
 /************************************************************************
  * ObReferenceObjectByHandle                                                       
 ************************************************************************/
-UCHAR  ObReferenceObjectByHandleOriginalBytes[5] = {0};             //保存原始函数前五个字节
+extern "C" UCHAR  ObReferenceObjectByHandleOriginalBytes[5] = {0};             //保存原始函数前五个字节
 
 #ifdef _X86_
 	_declspec(naked)
@@ -88,8 +88,25 @@ typedef NTSTATUS (*FunNtCreateUserProcessEx)(
 	PVOID pProcessUnKnow
 	);
 
-FunNtCreateUserProcessEx g_FunNtCreateProcess = NULL;
-UCHAR  NtCreateProcessOriginalBytes[5] = {0};             //保存原始函数前五个字节
+extern "C" FunNtCreateUserProcessEx g_FunNtCreateProcess = NULL;
+extern "C" UCHAR  NtCreateProcessOriginalBytes[5] = {0};             //保存原始函数前五个字节
+
+#ifdef _X86_
+extern "C" NTSTATUS
+	OriginalNewNtCreateProcessEx32_asm(
+	PHANDLE ProcessHandle,
+	PHANDLE ThreadHandle,
+	PVOID Parameter2,
+	PVOID Parameter3,
+	PVOID ProcessSecurityDescriptor,
+	PVOID ThreadSecurityDescriptor,
+	PVOID Parameter6,
+	PVOID Parameter7,
+	PRTL_USER_PROCESS_PARAMETERS ProcessParameters,
+	PVOID Parameter9,
+	PVOID pProcessUnKnow
+	);
+#endif 
 
 #ifdef _X86_
 _declspec(naked)
@@ -146,11 +163,11 @@ NewNtCreateProcessEx(
 
 	if (FindSubString(&(ProcessParameters->ImagePathName),&(strNotePad)))
 	{
-		KdPrint(("[%s] IS NOTEPAD.EXE!!  \n", __FUNCTION__));  
+		KdPrint(("[%s] IS NOTEPAD.EXE,ACCESS DENIED !!! \n", __FUNCTION__));  
 		return STATUS_ACCESS_DENIED;
 	}
 
-	status = OriginalNewNtCreateProcessEx(ProcessHandle,
+	status = OriginalNewNtCreateProcessEx32_asm(ProcessHandle,
 		ThreadHandle,
 		Parameter2,
 		Parameter3,

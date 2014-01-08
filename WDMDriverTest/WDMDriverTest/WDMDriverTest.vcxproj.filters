@@ -51,5 +51,8 @@
     <MASM Include="Util64_Asm.asm">
       <Filter>Source Files</Filter>
     </MASM>
+    <MASM Include="OriginalFun32_Asm.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
   </ItemGroup>
 </Project>

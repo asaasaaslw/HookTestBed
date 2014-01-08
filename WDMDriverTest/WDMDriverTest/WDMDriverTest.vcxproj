@@ -150,6 +150,7 @@
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Win7 Debug|x64'">
@@ -184,6 +185,12 @@
     <ClInclude Include="winternl.h" />
   </ItemGroup>
   <ItemGroup>
+    <MASM Include="OriginalFun32_Asm.asm">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Win7 Debug|x64'">true</ExcludedFromBuild>
+      <EnableAssemblyGeneratedCodeListing Condition="'$(Configuration)|$(Platform)'=='Win7 Debug|Win32'">true</EnableAssemblyGeneratedCodeListing>
+      <GeneratePreprocessedSourceListing Condition="'$(Configuration)|$(Platform)'=='Win7 Debug|Win32'">false</GeneratePreprocessedSourceListing>
+      <ListAllAvailableInformation Condition="'$(Configuration)|$(Platform)'=='Win7 Debug|Win32'">false</ListAllAvailableInformation>
+    </MASM>
     <MASM Include="OriginalFun64_Asm.asm" />
     <MASM Include="Util64_Asm.asm">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Win7 Debug|Win32'">true</ExcludedFromBuild>

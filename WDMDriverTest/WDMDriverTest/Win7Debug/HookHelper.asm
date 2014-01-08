@@ -9,15 +9,15 @@
 INCLUDELIB LIBCMT
 INCLUDELIB OLDNAMES
 
-PUBLIC	?g_FunNtCreateProcess@@3P6GJPAPAX0PAX11111PAU_RTL_USER_PROCESS_PARAMETERS@@11@ZA ; g_FunNtCreateProcess
-PUBLIC	?NtCreateProcessOriginalBytes@@3PAEA		; NtCreateProcessOriginalBytes
-PUBLIC	?ObReferenceObjectByHandleOriginalBytes@@3PAEA	; ObReferenceObjectByHandleOriginalBytes
+PUBLIC	_g_FunNtCreateProcess
+PUBLIC	_NtCreateProcessOriginalBytes
+PUBLIC	_ObReferenceObjectByHandleOriginalBytes
 _BSS	SEGMENT
-?g_FunNtCreateProcess@@3P6GJPAPAX0PAX11111PAU_RTL_USER_PROCESS_PARAMETERS@@11@ZA DD 01H DUP (?) ; g_FunNtCreateProcess
-?NtCreateProcessOriginalBytes@@3PAEA DB 05H DUP (?)	; NtCreateProcessOriginalBytes
+_g_FunNtCreateProcess DD 01H DUP (?)
+_NtCreateProcessOriginalBytes DB 05H DUP (?)
 	ALIGN	4
 
-?ObReferenceObjectByHandleOriginalBytes@@3PAEA DB 05H DUP (?) ; ObReferenceObjectByHandleOriginalBytes
+_ObReferenceObjectByHandleOriginalBytes DB 05H DUP (?)
 _BSS	ENDS
 PUBLIC	??3@YAXPAX@Z					; operator delete
 PUBLIC	??0HookHelper@@QAE@XZ				; HookHelper::HookHelper
@@ -40,7 +40,7 @@ PUBLIC	??_C@_0M@ENKGKOKC@notepad?4exe?$AA@FNODOBFM@	;  ?? ::FNODOBFM::`string'
 PUBLIC	??_C@_0BF@LFKNIPGB@NewNtCreateProcessEx?$AA@FNODOBFM@ ;  ?? ::FNODOBFM::`string'
 PUBLIC	??_C@_0DC@OIAGNPLD@?$FL?$CFs?$FN?5?$DM?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?6?5Im@FNODOBFM@ ;  ?? ::FNODOBFM::`string'
 PUBLIC	??_C@_1BI@JANGOEPN@?$AAN?$AAO?$AAT?$AAE?$AAP?$AAA?$AAD?$AA?4?$AAE?$AAX?$AAE?$AA?$AA@FNODOBFM@ ;  ?? ::FNODOBFM::`string'
-PUBLIC	??_C@_0BJ@FPHAFKAG@?$FL?$CFs?$FN?5IS?5NOTEPAD?4EXE?$CB?$CB?5?5?6?$AA@FNODOBFM@ ;  ?? ::FNODOBFM::`string'
+PUBLIC	??_C@_0CI@GGDNPHEL@?$FL?$CFs?$FN?5IS?5NOTEPAD?4EXE?0ACCESS?5DENIE@FNODOBFM@ ;  ?? ::FNODOBFM::`string'
 PUBLIC	??_C@_0BH@OKKHHBGM@HookHelper?3?3HookHelper?$AA@FNODOBFM@ ;  ?? ::FNODOBFM::`string'
 PUBLIC	??_C@_0BO@MNJPLLPD@?$FL?$CFs?$FN?5?$DM?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?6?$AA@FNODOBFM@ ;  ?? ::FNODOBFM::`string'
 PUBLIC	??_C@_0BI@HFJKMNDA@HookHelper?3?3?$HOHookHelper?$AA@FNODOBFM@ ;  ?? ::FNODOBFM::`string'
@@ -72,6 +72,7 @@ EXTRN	__imp__ExAllocatePool@8:PROC
 EXTRN	__imp__ExFreePool@4:PROC
 EXTRN	__imp__ObReferenceObjectByHandle@24:PROC
 EXTRN	__imp__ZwQuerySystemInformation@16:PROC
+EXTRN	_OriginalNewNtCreateProcessEx32_asm@44:PROC
 EXTRN	@__security_check_cookie@4:PROC
 EXTRN	_PsProcessType:DWORD
 EXTRN	___security_cookie:DWORD
@@ -172,10 +173,10 @@ text$s	SEGMENT
 ??_C@_0BH@OKKHHBGM@HookHelper?3?3HookHelper?$AA@FNODOBFM@ DB 'HookHelper:'
 	DB	':HookHelper', 00H				;  ?? ::FNODOBFM::`string'
 text$s	ENDS
-;	COMDAT ??_C@_0BJ@FPHAFKAG@?$FL?$CFs?$FN?5IS?5NOTEPAD?4EXE?$CB?$CB?5?5?6?$AA@FNODOBFM@
+;	COMDAT ??_C@_0CI@GGDNPHEL@?$FL?$CFs?$FN?5IS?5NOTEPAD?4EXE?0ACCESS?5DENIE@FNODOBFM@
 text$s	SEGMENT
-??_C@_0BJ@FPHAFKAG@?$FL?$CFs?$FN?5IS?5NOTEPAD?4EXE?$CB?$CB?5?5?6?$AA@FNODOBFM@ DB '['
-	DB	'%s] IS NOTEPAD.EXE!!  ', 0aH, 00H		;  ?? ::FNODOBFM::`string'
+??_C@_0CI@GGDNPHEL@?$FL?$CFs?$FN?5IS?5NOTEPAD?4EXE?0ACCESS?5DENIE@FNODOBFM@ DB '['
+	DB	'%s] IS NOTEPAD.EXE,ACCESS DENIED !!! ', 0aH, 00H ;  ?? ::FNODOBFM::`string'
 text$s	ENDS
 ;	COMDAT ??_C@_1BI@JANGOEPN@?$AAN?$AAO?$AAT?$AAE?$AAP?$AAA?$AAD?$AA?4?$AAE?$AAX?$AAE?$AA?$AA@FNODOBFM@
 text$s	SEGMENT
@@ -227,14 +228,14 @@ _Parameter9$ = 44					; size = 4
 _pProcessUnKnow$ = 48					; size = 4
 ?NewNtCreateProcessEx@@YGJPAPAX0PAX11111PAU_RTL_USER_PROCESS_PARAMETERS@@11@Z PROC ; NewNtCreateProcessEx, COMDAT
 
-; 140  : {
+; 157  : {
 
 	npad	2
 	push	ebp
 	mov	ebp, esp
 	sub	esp, 12					; 0000000cH
 
-; 141  : 	KdPrint(("[%s] <----------------------\n ImageName:[%wZ],  \n", __FUNCTION__, &(ProcessParameters->ImagePathName)));  
+; 158  : 	KdPrint(("[%s] <----------------------\n ImageName:[%wZ],  \n", __FUNCTION__, &(ProcessParameters->ImagePathName)));  
 
 	mov	eax, DWORD PTR _ProcessParameters$[ebp]
 	add	eax, 56					; 00000038H
@@ -244,21 +245,21 @@ _pProcessUnKnow$ = 48					; size = 4
 	call	_DbgPrint
 	add	esp, 12					; 0000000cH
 
-; 142  : 	NTSTATUS status = STATUS_SUCCESS;
+; 159  : 	NTSTATUS status = STATUS_SUCCESS;
 
 	mov	DWORD PTR _status$[ebp], 0
 
-; 143  : 	UNICODE_STRING strNotePad;
-; 144  : 
-; 145  : 	RtlInitUnicodeString(&strNotePad, L"NOTEPAD.EXE");
+; 160  : 	UNICODE_STRING strNotePad;
+; 161  : 
+; 162  : 	RtlInitUnicodeString(&strNotePad, L"NOTEPAD.EXE");
 
 	push	OFFSET ??_C@_1BI@JANGOEPN@?$AAN?$AAO?$AAT?$AAE?$AAP?$AAA?$AAD?$AA?4?$AAE?$AAX?$AAE?$AA?$AA@FNODOBFM@
 	lea	ecx, DWORD PTR _strNotePad$[ebp]
 	push	ecx
 	call	DWORD PTR __imp__RtlInitUnicodeString@8
 
-; 146  : 
-; 147  : 	if (FindSubString(&(ProcessParameters->ImagePathName),&(strNotePad)))
+; 163  : 
+; 164  : 	if (FindSubString(&(ProcessParameters->ImagePathName),&(strNotePad)))
 
 	lea	edx, DWORD PTR _strNotePad$[ebp]
 	push	edx
@@ -270,34 +271,34 @@ _pProcessUnKnow$ = 48					; size = 4
 	test	ecx, ecx
 	je	SHORT $LN2@NewNtCreat
 
-; 148  : 	{
-; 149  : 		KdPrint(("[%s] IS NOTEPAD.EXE!!  \n", __FUNCTION__));  
+; 165  : 	{
+; 166  : 		KdPrint(("[%s] IS NOTEPAD.EXE,ACCESS DENIED !!! \n", __FUNCTION__));  
 
 	push	OFFSET ??_C@_0BF@LFKNIPGB@NewNtCreateProcessEx?$AA@FNODOBFM@
-	push	OFFSET ??_C@_0BJ@FPHAFKAG@?$FL?$CFs?$FN?5IS?5NOTEPAD?4EXE?$CB?$CB?5?5?6?$AA@FNODOBFM@
+	push	OFFSET ??_C@_0CI@GGDNPHEL@?$FL?$CFs?$FN?5IS?5NOTEPAD?4EXE?0ACCESS?5DENIE@FNODOBFM@
 	call	_DbgPrint
 	add	esp, 8
 
-; 150  : 		return STATUS_ACCESS_DENIED;
+; 167  : 		return STATUS_ACCESS_DENIED;
 
 	mov	eax, -1073741790			; c0000022H
 	jmp	SHORT $LN3@NewNtCreat
 $LN2@NewNtCreat:
 
-; 151  : 	}
-; 152  : 
-; 153  : 	status = OriginalNewNtCreateProcessEx(ProcessHandle,
-; 154  : 		ThreadHandle,
-; 155  : 		Parameter2,
-; 156  : 		Parameter3,
-; 157  : 		ProcessSecurityDescriptor,
-; 158  : 		ThreadSecurityDescriptor,
-; 159  : 		Parameter6,
-; 160  : 		Parameter7,
-; 161  : 		ProcessParameters,
-; 162  : 		Parameter9,
-; 163  : 		pProcessUnKnow
-; 164  : 		);
+; 168  : 	}
+; 169  : 
+; 170  : 	status = OriginalNewNtCreateProcessEx32_asm(ProcessHandle,
+; 171  : 		ThreadHandle,
+; 172  : 		Parameter2,
+; 173  : 		Parameter3,
+; 174  : 		ProcessSecurityDescriptor,
+; 175  : 		ThreadSecurityDescriptor,
+; 176  : 		Parameter6,
+; 177  : 		Parameter7,
+; 178  : 		ProcessParameters,
+; 179  : 		Parameter9,
+; 180  : 		pProcessUnKnow
+; 181  : 		);
 
 	mov	edx, DWORD PTR _pProcessUnKnow$[ebp]
 	push	edx
@@ -321,21 +322,21 @@ $LN2@NewNtCreat:
 	push	edx
 	mov	eax, DWORD PTR _ProcessHandle$[ebp]
 	push	eax
-	call	?OriginalNewNtCreateProcessEx@@YGJPAPAX0PAX11111PAU_RTL_USER_PROCESS_PARAMETERS@@11@Z ; OriginalNewNtCreateProcessEx
+	call	_OriginalNewNtCreateProcessEx32_asm@44
 	mov	DWORD PTR _status$[ebp], eax
 
-; 165  : 
-; 166  : 	if (NT_SUCCESS(status))
-; 167  : 	{
-; 168  : 		//KdPrint(("[%s] , ProcessName: %s\n", __FUNCTION__, (char *)((ULONG)(*ProcessHandle) + EPROCESS_NAME_OFFSET)));  
-; 169  : 	}
-; 170  : 
-; 171  : 	return status;
+; 182  : 
+; 183  : 	if (NT_SUCCESS(status))
+; 184  : 	{
+; 185  : 		//KdPrint(("[%s] , ProcessName: %s\n", __FUNCTION__, (char *)((ULONG)(*ProcessHandle) + EPROCESS_NAME_OFFSET)));  
+; 186  : 	}
+; 187  : 
+; 188  : 	return status;
 
 	mov	eax, DWORD PTR _status$[ebp]
 $LN3@NewNtCreat:
 
-; 172  : }
+; 189  : }
 
 	mov	esp, ebp
 	pop	ebp
@@ -359,22 +360,22 @@ _Parameter9$ = 44					; size = 4
 _pProcessUnKnow$ = 48					; size = 4
 ?OriginalNewNtCreateProcessEx@@YGJPAPAX0PAX11111PAU_RTL_USER_PROCESS_PARAMETERS@@11@Z PROC ; OriginalNewNtCreateProcessEx, COMDAT
 
-; 112  : #ifdef _X86_
-; 113  : 	_asm     
-; 114  : 	{         
-; 115  : 		push 6B8h
+; 129  : #ifdef _X86_
+; 130  : 	_asm     
+; 131  : 	{         
+; 132  : 		push 6B8h
 
 	push	1720					; 000006b8H
 
-; 116  : 		mov eax,g_FunNtCreateProcess
+; 133  : 		mov eax,g_FunNtCreateProcess
 
-	mov	eax, DWORD PTR ?g_FunNtCreateProcess@@3P6GJPAPAX0PAX11111PAU_RTL_USER_PROCESS_PARAMETERS@@11@ZA ; g_FunNtCreateProcess
+	mov	eax, DWORD PTR _g_FunNtCreateProcess
 
-; 117  : 		add eax,5
+; 134  : 		add eax,5
 
 	add	eax, 5
 
-; 118  : 		jmp eax                      
+; 135  : 		jmp eax                      
 
 	jmp	eax
 ?OriginalNewNtCreateProcessEx@@YGJPAPAX0PAX11111PAU_RTL_USER_PROCESS_PARAMETERS@@11@Z ENDP ; OriginalNewNtCreateProcessEx
@@ -749,7 +750,7 @@ _uCount$ = 16						; size = 4
 ?FindSpeCodeInMemory@HookHelper@@QAEJPAK0K@Z PROC	; HookHelper::FindSpeCodeInMemory, COMDAT
 ; _this$ = ecx
 
-; 292  : {
+; 309  : {
 
 	npad	2
 	push	ebp
@@ -758,7 +759,7 @@ _uCount$ = 16						; size = 4
 	push	esi
 	mov	DWORD PTR _this$[ebp], ecx
 
-; 293  : 	PAGED_CODE()
+; 310  : 	PAGED_CODE()
 
 	call	DWORD PTR __imp__KeGetCurrentIrql@0
 	movzx	eax, al
@@ -772,24 +773,24 @@ $LN14@FindSpeCod:
 	mov	DWORD PTR tv70[ebp], 1
 $LN15@FindSpeCod:
 
-; 294  : 
-; 295  : 	NTSTATUS status = STATUS_UNSUCCESSFUL;
+; 311  : 
+; 312  : 	NTSTATUS status = STATUS_UNSUCCESSFUL;
 
 	mov	DWORD PTR _status$[ebp], -1073741823	; c0000001H
 
-; 296  : 	ULONG uResult = -1;
+; 313  : 	ULONG uResult = -1;
 
 	mov	DWORD PTR _uResult$[ebp], -1
 
-; 297  : 	ULONG uSzie;
-; 298  : 	ULONG ntosknlBase;
-; 299  : 	ULONG ntosknlEndAddr;
-; 300  : 	ULONG uMCount;
-; 301  : 	PULONG pBuf;
-; 302  : 
-; 303  : 	PSYSTEM_MODULE_INFORMATION_ENTRY module;
-; 304  : 
-; 305  : 	ZwQuerySystemInformation(SystemModuleInformation, NULL, 0, &uSzie);
+; 314  : 	ULONG uSzie;
+; 315  : 	ULONG ntosknlBase;
+; 316  : 	ULONG ntosknlEndAddr;
+; 317  : 	ULONG uMCount;
+; 318  : 	PULONG pBuf;
+; 319  : 
+; 320  : 	PSYSTEM_MODULE_INFORMATION_ENTRY module;
+; 321  : 
+; 322  : 	ZwQuerySystemInformation(SystemModuleInformation, NULL, 0, &uSzie);
 
 	lea	ecx, DWORD PTR _uSzie$[ebp]
 	push	ecx
@@ -798,7 +799,7 @@ $LN15@FindSpeCod:
 	push	11					; 0000000bH
 	call	DWORD PTR __imp__ZwQuerySystemInformation@16
 
-; 306  : 	if(NULL==(pBuf = (PULONG)ExAllocatePool(PagedPool, uSzie)))
+; 323  : 	if(NULL==(pBuf = (PULONG)ExAllocatePool(PagedPool, uSzie)))
 
 	mov	edx, DWORD PTR _uSzie$[ebp]
 	push	edx
@@ -808,22 +809,22 @@ $LN15@FindSpeCod:
 	cmp	DWORD PTR _pBuf$[ebp], 0
 	jne	SHORT $LN11@FindSpeCod
 
-; 307  : 	{
-; 308  : 		KdPrint(("[%s] failed alloc memory failed \n", __FUNCTION__));
+; 324  : 	{
+; 325  : 		KdPrint(("[%s] failed alloc memory failed \n", __FUNCTION__));
 
 	push	OFFSET ??_C@_0CA@GHBGDHMM@HookHelper?3?3FindSpeCodeInMemory?$AA@FNODOBFM@
 	push	OFFSET ??_C@_0CC@BKIIOGJF@?$FL?$CFs?$FN?5failed?5alloc?5memory?5failed?5@FNODOBFM@
 	call	_DbgPrint
 	add	esp, 8
 
-; 309  : 		return status;
+; 326  : 		return status;
 
 	mov	eax, DWORD PTR _status$[ebp]
 	jmp	$LN12@FindSpeCod
 $LN11@FindSpeCod:
 
-; 310  : 	}
-; 311  : 	KdPrint(("[%s] uSzie = %d \n", __FUNCTION__, uSzie));
+; 327  : 	}
+; 328  : 	KdPrint(("[%s] uSzie = %d \n", __FUNCTION__, uSzie));
 
 	mov	eax, DWORD PTR _uSzie$[ebp]
 	push	eax
@@ -832,7 +833,7 @@ $LN11@FindSpeCod:
 	call	_DbgPrint
 	add	esp, 12					; 0000000cH
 
-; 312  : 	status = ZwQuerySystemInformation(SystemModuleInformation,pBuf, uSzie, 0);
+; 329  : 	status = ZwQuerySystemInformation(SystemModuleInformation,pBuf, uSzie, 0);
 
 	push	0
 	mov	ecx, DWORD PTR _uSzie$[ebp]
@@ -843,34 +844,34 @@ $LN11@FindSpeCod:
 	call	DWORD PTR __imp__ZwQuerySystemInformation@16
 	mov	DWORD PTR _status$[ebp], eax
 
-; 313  : 	if(!NT_SUCCESS( status ))
+; 330  : 	if(!NT_SUCCESS( status ))
 
 	cmp	DWORD PTR _status$[ebp], 0
 	jge	SHORT $LN10@FindSpeCod
 
-; 314  : 	{
-; 315  : 		KdPrint(("[%s] failed query \n", __FUNCTION__));
+; 331  : 	{
+; 332  : 		KdPrint(("[%s] failed query \n", __FUNCTION__));
 
 	push	OFFSET ??_C@_0CA@GHBGDHMM@HookHelper?3?3FindSpeCodeInMemory?$AA@FNODOBFM@
 	push	OFFSET ??_C@_0BE@BMFCHCEB@?$FL?$CFs?$FN?5failed?5query?5?6?$AA@FNODOBFM@
 	call	_DbgPrint
 	add	esp, 8
 
-; 316  : 		return status;
+; 333  : 		return status;
 
 	mov	eax, DWORD PTR _status$[ebp]
 	jmp	$LN12@FindSpeCod
 $LN10@FindSpeCod:
 
-; 317  : 	}
-; 318  : 	module = (PSYSTEM_MODULE_INFORMATION_ENTRY)(( PULONG )pBuf + 1);
+; 334  : 	}
+; 335  : 	module = (PSYSTEM_MODULE_INFORMATION_ENTRY)(( PULONG )pBuf + 1);
 
 	mov	eax, DWORD PTR _pBuf$[ebp]
 	add	eax, 4
 	mov	DWORD PTR _module$[ebp], eax
 
-; 319  : 
-; 320  : 	ntosknlEndAddr=(ULONG)module->Base+(ULONG)module->Size;
+; 336  : 
+; 337  : 	ntosknlEndAddr=(ULONG)module->Base+(ULONG)module->Size;
 
 	mov	ecx, DWORD PTR _module$[ebp]
 	mov	edx, DWORD PTR [ecx+8]
@@ -878,14 +879,14 @@ $LN10@FindSpeCod:
 	add	edx, DWORD PTR [eax+12]
 	mov	DWORD PTR _ntosknlEndAddr$[ebp], edx
 
-; 321  : 	ntosknlBase=(ULONG)module->Base;
+; 338  : 	ntosknlBase=(ULONG)module->Base;
 
 	mov	ecx, DWORD PTR _module$[ebp]
 	mov	edx, DWORD PTR [ecx+8]
 	mov	DWORD PTR _ntosknlBase$[ebp], edx
 
-; 322  : 
-; 323  : 	KdPrint(("[%s] Base:%08x, End:%08x ImageName:%s \n", __FUNCTION__, ntosknlBase, ntosknlEndAddr ,module->ImageName));
+; 339  : 
+; 340  : 	KdPrint(("[%s] Base:%08x, End:%08x ImageName:%s \n", __FUNCTION__, ntosknlBase, ntosknlEndAddr ,module->ImageName));
 
 	mov	eax, DWORD PTR _module$[ebp]
 	add	eax, 28					; 0000001cH
@@ -899,15 +900,15 @@ $LN10@FindSpeCod:
 	call	_DbgPrint
 	add	esp, 20					; 00000014H
 
-; 324  : 
-; 325  : 	ExFreePool(pBuf);
+; 341  : 
+; 342  : 	ExFreePool(pBuf);
 
 	mov	eax, DWORD PTR _pBuf$[ebp]
 	push	eax
 	call	DWORD PTR __imp__ExFreePool@4
 
-; 326  : 
-; 327  : 	for (ULONG i = ntosknlBase;i < ntosknlEndAddr - (4 * uCount); i++)
+; 343  : 
+; 344  : 	for (ULONG i = ntosknlBase;i < ntosknlEndAddr - (4 * uCount); i++)
 
 	mov	ecx, DWORD PTR _ntosknlBase$[ebp]
 	mov	DWORD PTR _i$2[ebp], ecx
@@ -924,12 +925,12 @@ $LN9@FindSpeCod:
 	cmp	DWORD PTR _i$2[ebp], ecx
 	jae	SHORT $LN7@FindSpeCod
 
-; 328  : 	{
-; 329  : 		BOOL bFind = TRUE;
+; 345  : 	{
+; 346  : 		BOOL bFind = TRUE;
 
 	mov	DWORD PTR _bFind$1[ebp], 1
 
-; 330  : 		for (int j = 0; j < uCount; j++)
+; 347  : 		for (int j = 0; j < uCount; j++)
 
 	mov	DWORD PTR _j$3[ebp], 0
 	jmp	SHORT $LN6@FindSpeCod
@@ -942,8 +943,8 @@ $LN6@FindSpeCod:
 	cmp	eax, DWORD PTR _uCount$[ebp]
 	jae	SHORT $LN4@FindSpeCod
 
-; 331  : 		{
-; 332  : 			if ((*((ULONG *)(i + j * 4)) == code_sp_array[j]))
+; 348  : 		{
+; 349  : 			if ((*((ULONG *)(i + j * 4)) == code_sp_array[j]))
 
 	mov	ecx, DWORD PTR _j$3[ebp]
 	mov	edx, DWORD PTR _i$2[ebp]
@@ -953,47 +954,47 @@ $LN6@FindSpeCod:
 	cmp	ecx, DWORD PTR [esi+eax*4]
 	jne	SHORT $LN3@FindSpeCod
 
-; 333  : 			{
-; 334  : 				continue;
+; 350  : 			{
+; 351  : 				continue;
 
 	jmp	SHORT $LN5@FindSpeCod
 
-; 335  : 			}
-; 336  : 			else
+; 352  : 			}
+; 353  : 			else
 
 	jmp	SHORT $LN2@FindSpeCod
 $LN3@FindSpeCod:
 
-; 337  : 			{
-; 338  : 				bFind = FALSE;
+; 354  : 			{
+; 355  : 				bFind = FALSE;
 
 	mov	DWORD PTR _bFind$1[ebp], 0
 
-; 339  : 				break;
+; 356  : 				break;
 
 	jmp	SHORT $LN4@FindSpeCod
 $LN2@FindSpeCod:
 
-; 340  : 			}
-; 341  : 		}
+; 357  : 			}
+; 358  : 		}
 
 	jmp	SHORT $LN5@FindSpeCod
 $LN4@FindSpeCod:
 
-; 342  : 
-; 343  : 		if (bFind)
+; 359  : 
+; 360  : 		if (bFind)
 
 	cmp	DWORD PTR _bFind$1[ebp], 0
 	je	SHORT $LN1@FindSpeCod
 
-; 344  : 		{
-; 345  : 			(*pRet) = i;
+; 361  : 		{
+; 362  : 			(*pRet) = i;
 
 	mov	edx, DWORD PTR _pRet$[ebp]
 	mov	eax, DWORD PTR _i$2[ebp]
 	mov	DWORD PTR [edx], eax
 
-; 346  : 			KdPrint(("[%s] Find:%08x\n",__FUNCTION__, *pRet));
+; 363  : 			KdPrint(("[%s] Find:%08x\n",__FUNCTION__, *pRet));
 
 	mov	ecx, DWORD PTR _pRet$[ebp]
 	mov	edx, DWORD PTR [ecx]
@@ -1003,37 +1004,37 @@ $LN4@FindSpeCod:
 	call	_DbgPrint
 	add	esp, 12					; 0000000cH
 
-; 347  : 			status = STATUS_SUCCESS;
+; 364  : 			status = STATUS_SUCCESS;
 
 	mov	DWORD PTR _status$[ebp], 0
 
-; 348  : 			return status;
+; 365  : 			return status;
 
 	mov	eax, DWORD PTR _status$[ebp]
 	jmp	SHORT $LN12@FindSpeCod
 $LN1@FindSpeCod:
 
-; 349  : 		}
-; 350  : 	}
+; 366  : 		}
+; 367  : 	}
 
 	jmp	$LN8@FindSpeCod
 $LN7@FindSpeCod:
 
-; 351  : 
-; 352  : 	KdPrint(("[%s] UnFind . \n",__FUNCTION__));
+; 368  : 
+; 369  : 	KdPrint(("[%s] UnFind . \n",__FUNCTION__));
 
 	push	OFFSET ??_C@_0CA@GHBGDHMM@HookHelper?3?3FindSpeCodeInMemory?$AA@FNODOBFM@
 	push	OFFSET ??_C@_0BA@FFJEGKCA@?$FL?$CFs?$FN?5UnFind?5?4?5?6?$AA@FNODOBFM@
 	call	_DbgPrint
 	add	esp, 8
 
-; 353  : 
-; 354  : 	return status;
+; 370  : 
+; 371  : 	return status;
 
 	mov	eax, DWORD PTR _status$[ebp]
 $LN12@FindSpeCod:
 
-; 355  : }
+; 372  : }
 
 	pop	esi
 	mov	esp, ebp
@@ -1050,7 +1051,7 @@ _Irql$ = -1						; size = 1
 ?UnHookNtCreateProcess@HookHelper@@QAEEXZ PROC		; HookHelper::UnHookNtCreateProcess, COMDAT
 ; _this$ = ecx
 
-; 279  : {
+; 296  : {
 
 	npad	2
 	push	ebp
@@ -1058,47 +1059,47 @@ _Irql$ = -1						; size = 1
 	sub	esp, 8
 	mov	DWORD PTR _this$[ebp], ecx
 
-; 280  : 	KdPrint(("[%s] <----------------------\n", __FUNCTION__));  
+; 297  : 	KdPrint(("[%s] <----------------------\n", __FUNCTION__));  
 
 	push	OFFSET ??_C@_0CC@EKOPFHFD@HookHelper?3?3UnHookNtCreateProces@FNODOBFM@
 	push	OFFSET ??_C@_0BO@MNJPLLPD@?$FL?$CFs?$FN?5?$DM?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?6?$AA@FNODOBFM@
 	call	_DbgPrint
 	add	esp, 8
 
-; 281  : 	KIRQL Irql;
-; 282  : 	PageOff();
+; 298  : 	KIRQL Irql;
+; 299  : 	PageOff();
 
 	call	?PageOff@@YGXXZ				; PageOff
 
-; 283  : 	KeRaiseIrql(DISPATCH_LEVEL, &Irql);  //函数开头五个字节写JMP
+; 300  : 	KeRaiseIrql(DISPATCH_LEVEL, &Irql);  //函数开头五个字节写JMP
 
 	mov	cl, 2
 	call	DWORD PTR __imp_@KfRaiseIrql@4
 	mov	BYTE PTR _Irql$[ebp], al
 
-; 284  : 	RtlCopyMemory((UCHAR *)g_FunNtCreateProcess,NtCreateProcessOriginalBytes,5);  
+; 301  : 	RtlCopyMemory((UCHAR *)g_FunNtCreateProcess,NtCreateProcessOriginalBytes,5);  
 
-	mov	eax, DWORD PTR ?g_FunNtCreateProcess@@3P6GJPAPAX0PAX11111PAU_RTL_USER_PROCESS_PARAMETERS@@11@ZA ; g_FunNtCreateProcess
-	mov	ecx, DWORD PTR ?NtCreateProcessOriginalBytes@@3PAEA
+	mov	eax, DWORD PTR _g_FunNtCreateProcess
+	mov	ecx, DWORD PTR _NtCreateProcessOriginalBytes
 	mov	DWORD PTR [eax], ecx
-	mov	dl, BYTE PTR ?NtCreateProcessOriginalBytes@@3PAEA+4
+	mov	dl, BYTE PTR _NtCreateProcessOriginalBytes+4
 	mov	BYTE PTR [eax+4], dl
 
-; 285  : 	KeLowerIrql(Irql);
+; 302  : 	KeLowerIrql(Irql);
 
 	mov	cl, BYTE PTR _Irql$[ebp]
 	call	DWORD PTR __imp_@KfLowerIrql@4
 
-; 286  : 	PageOn();
+; 303  : 	PageOn();
 
 	call	?PageOn@@YGXXZ				; PageOn
 
-; 287  : 
-; 288  : 	return TRUE;
+; 304  : 
+; 305  : 	return TRUE;
 
 	mov	al, 1
 
-; 289  : }
+; 306  : }
 
 	mov	esp, ebp
 	pop	ebp
@@ -1120,7 +1121,7 @@ _newFun$ = 8						; size = 4
 ?HookNtCreateProcess@HookHelper@@QAEEPAPAX@Z PROC	; HookHelper::HookNtCreateProcess, COMDAT
 ; _this$ = ecx
 
-; 237  : {
+; 254  : {
 
 	npad	2
 	push	ebp
@@ -1131,16 +1132,16 @@ _newFun$ = 8						; size = 4
 	mov	DWORD PTR __$ArrayPad$[ebp], eax
 	mov	DWORD PTR _this$[ebp], ecx
 
-; 238  : 	KdPrint(("[%s] <----------------------\n", __FUNCTION__));  
+; 255  : 	KdPrint(("[%s] <----------------------\n", __FUNCTION__));  
 
 	push	OFFSET ??_C@_0CA@DDCEFIIE@HookHelper?3?3HookNtCreateProcess?$AA@FNODOBFM@
 	push	OFFSET ??_C@_0BO@MNJPLLPD@?$FL?$CFs?$FN?5?$DM?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?6?$AA@FNODOBFM@
 	call	_DbgPrint
 	add	esp, 8
 
-; 239  : 	KIRQL Irql;
-; 240  : 	ULONG  CR0VALUE;  
-; 241  : 	UCHAR JmpAddress[5] = {0xE9,0,0,0,0};       //跳转到HOOK函数的地址
+; 256  : 	KIRQL Irql;
+; 257  : 	ULONG  CR0VALUE;  
+; 258  : 	UCHAR JmpAddress[5] = {0xE9,0,0,0,0};       //跳转到HOOK函数的地址
 
 	mov	BYTE PTR _JmpAddress$[ebp], 233		; 000000e9H
 	mov	BYTE PTR _JmpAddress$[ebp+1], 0
@@ -1148,37 +1149,37 @@ _newFun$ = 8						; size = 4
 	mov	BYTE PTR _JmpAddress$[ebp+3], 0
 	mov	BYTE PTR _JmpAddress$[ebp+4], 0
 
-; 242  : 	UNICODE_STRING strNtCreateProcess;
-; 243  : 	ULONG uAddress = 0;
+; 259  : 	UNICODE_STRING strNtCreateProcess;
+; 260  : 	ULONG uAddress = 0;
 
 	mov	DWORD PTR _uAddress$[ebp], 0
 
-; 244  : 
-; 245  : 	RtlInitUnicodeString(&strNtCreateProcess, L"NtCreateUserProcess");
+; 261  : 
+; 262  : 	RtlInitUnicodeString(&strNtCreateProcess, L"NtCreateUserProcess");
 
 	push	OFFSET ??_C@_1CI@PBJJPAEM@?$AAN?$AAt?$AAC?$AAr?$AAe?$AAa?$AAt?$AAe?$AAU?$AAs?$AAe?$AAr?$AAP?$AAr?$AAo?$AAc?$AAe?$AAs?$AAs?$AA?$AA@FNODOBFM@
 	lea	eax, DWORD PTR _strNtCreateProcess$[ebp]
 	push	eax
 	call	DWORD PTR __imp__RtlInitUnicodeString@8
 
-; 246  : 
-; 247  : 	//85890845 fffff9b0 890c458b fff9ac85 NtCreateUserProcess + 0x10的特征码
-; 248  : 	ULONG uSpecArray[8] = {
-; 249  : 		0x85890845, 0xfffff9b0, 0x890c458b, 0xfff9ac85,
+; 263  : 
+; 264  : 	//85890845 fffff9b0 890c458b fff9ac85 NtCreateUserProcess + 0x10的特征码
+; 265  : 	ULONG uSpecArray[8] = {
+; 266  : 		0x85890845, 0xfffff9b0, 0x890c458b, 0xfff9ac85,
 
 	mov	DWORD PTR _uSpecArray$[ebp], -2054617019 ; 85890845H
 	mov	DWORD PTR _uSpecArray$[ebp+4], -1616	; fffff9b0H
 	mov	DWORD PTR _uSpecArray$[ebp+8], -1995684469 ; 890c458bH
 	mov	DWORD PTR _uSpecArray$[ebp+12], -414587	; fff9ac85H
 
-; 250  : 		0x185d8bff, 0xf9a09d89, 0x458bffff, 0x8c85891c};
+; 267  : 		0x185d8bff, 0xf9a09d89, 0x458bffff, 0x8c85891c};
 
 	mov	DWORD PTR _uSpecArray$[ebp+16], 408783871 ; 185d8bffH
 	mov	DWORD PTR _uSpecArray$[ebp+20], -106914423 ; f9a09d89H
 	mov	DWORD PTR _uSpecArray$[ebp+24], 1166802943 ; 458bffffH
 	mov	DWORD PTR _uSpecArray$[ebp+28], -1937405668 ; 8c85891cH
 
-; 251  : 	FindSpeCodeInMemory(&uAddress, uSpecArray, 8 );
+; 268  : 	FindSpeCodeInMemory(&uAddress, uSpecArray, 8 );
 
 	push	8
 	lea	ecx, DWORD PTR _uSpecArray$[ebp]
@@ -1188,119 +1189,119 @@ _newFun$ = 8						; size = 4
 	mov	ecx, DWORD PTR _this$[ebp]
 	call	?FindSpeCodeInMemory@HookHelper@@QAEJPAK0K@Z ; HookHelper::FindSpeCodeInMemory
 
-; 252  : 	uAddress -= 0x10;
+; 269  : 	uAddress -= 0x10;
 
 	mov	eax, DWORD PTR _uAddress$[ebp]
 	sub	eax, 16					; 00000010H
 	mov	DWORD PTR _uAddress$[ebp], eax
 
-; 253  : 
-; 254  : 	g_FunNtCreateProcess = (FunNtCreateUserProcessEx) uAddress;
+; 270  : 
+; 271  : 	g_FunNtCreateProcess = (FunNtCreateUserProcessEx) uAddress;
 
 	mov	ecx, DWORD PTR _uAddress$[ebp]
-	mov	DWORD PTR ?g_FunNtCreateProcess@@3P6GJPAPAX0PAX11111PAU_RTL_USER_PROCESS_PARAMETERS@@11@ZA, ecx ; g_FunNtCreateProcess
+	mov	DWORD PTR _g_FunNtCreateProcess, ecx
 
-; 255  : 	if (!g_FunNtCreateProcess)
+; 272  : 	if (!g_FunNtCreateProcess)
 
-	cmp	DWORD PTR ?g_FunNtCreateProcess@@3P6GJPAPAX0PAX11111PAU_RTL_USER_PROCESS_PARAMETERS@@11@ZA, 0 ; g_FunNtCreateProcess
+	cmp	DWORD PTR _g_FunNtCreateProcess, 0
 	jne	SHORT $LN1@HookNtCrea
 
-; 256  : 	{
-; 257  : 		RtlCopyMemory(NtCreateProcessOriginalBytes, g_FunNtCreateProcess, 5);
+; 273  : 	{
+; 274  : 		RtlCopyMemory(NtCreateProcessOriginalBytes, g_FunNtCreateProcess, 5);
 
-	mov	edx, DWORD PTR ?g_FunNtCreateProcess@@3P6GJPAPAX0PAX11111PAU_RTL_USER_PROCESS_PARAMETERS@@11@ZA ; g_FunNtCreateProcess
+	mov	edx, DWORD PTR _g_FunNtCreateProcess
 	mov	eax, DWORD PTR [edx]
-	mov	DWORD PTR ?NtCreateProcessOriginalBytes@@3PAEA, eax
+	mov	DWORD PTR _NtCreateProcessOriginalBytes, eax
 	mov	cl, BYTE PTR [edx+4]
-	mov	BYTE PTR ?NtCreateProcessOriginalBytes@@3PAEA+4, cl
+	mov	BYTE PTR _NtCreateProcessOriginalBytes+4, cl
 
-; 258  : 		KdPrint(("[%s] g_FunNtCreateProcess == NULL !!!!!\n", __FUNCTION__)); 
+; 275  : 		KdPrint(("[%s] g_FunNtCreateProcess == NULL !!!!!\n", __FUNCTION__)); 
 
 	push	OFFSET ??_C@_0CA@DDCEFIIE@HookHelper?3?3HookNtCreateProcess?$AA@FNODOBFM@
 	push	OFFSET ??_C@_0CJ@IPJOHLF@?$FL?$CFs?$FN?5g_FunNtCreateProcess?5?$DN?$DN?5NUL@FNODOBFM@
 	call	_DbgPrint
 	add	esp, 8
 
-; 259  : 		return FALSE;
+; 276  : 		return FALSE;
 
 	xor	al, al
 	jmp	$LN2@HookNtCrea
 $LN1@HookNtCrea:
 
-; 260  : 	}
-; 261  : 	RtlCopyMemory(NtCreateProcessOriginalBytes, g_FunNtCreateProcess, 5);
+; 277  : 	}
+; 278  : 	RtlCopyMemory(NtCreateProcessOriginalBytes, g_FunNtCreateProcess, 5);
 
-	mov	edx, DWORD PTR ?g_FunNtCreateProcess@@3P6GJPAPAX0PAX11111PAU_RTL_USER_PROCESS_PARAMETERS@@11@ZA ; g_FunNtCreateProcess
+	mov	edx, DWORD PTR _g_FunNtCreateProcess
 	mov	eax, DWORD PTR [edx]
-	mov	DWORD PTR ?NtCreateProcessOriginalBytes@@3PAEA, eax
+	mov	DWORD PTR _NtCreateProcessOriginalBytes, eax
 	mov	cl, BYTE PTR [edx+4]
-	mov	BYTE PTR ?NtCreateProcessOriginalBytes@@3PAEA+4, cl
+	mov	BYTE PTR _NtCreateProcessOriginalBytes+4, cl
 
-; 262  : 	*(ULONG  *)(JmpAddress+1)=(ULONG)NewNtCreateProcessEx - ((ULONG)g_FunNtCreateProcess + 5);
+; 279  : 	*(ULONG  *)(JmpAddress+1)=(ULONG)NewNtCreateProcessEx - ((ULONG)g_FunNtCreateProcess + 5);
 
-	mov	edx, DWORD PTR ?g_FunNtCreateProcess@@3P6GJPAPAX0PAX11111PAU_RTL_USER_PROCESS_PARAMETERS@@11@ZA ; g_FunNtCreateProcess
+	mov	edx, DWORD PTR _g_FunNtCreateProcess
 	add	edx, 5
 	mov	eax, OFFSET ?NewNtCreateProcessEx@@YGJPAPAX0PAX11111PAU_RTL_USER_PROCESS_PARAMETERS@@11@Z ; NewNtCreateProcessEx
 	sub	eax, edx
 	mov	DWORD PTR _JmpAddress$[ebp+1], eax
 
-; 263  : 	KdPrint(("[NtCreateProcess] :0x%x",g_FunNtCreateProcess));
+; 280  : 	KdPrint(("[NtCreateProcess] :0x%x",g_FunNtCreateProcess));
 
-	mov	ecx, DWORD PTR ?g_FunNtCreateProcess@@3P6GJPAPAX0PAX11111PAU_RTL_USER_PROCESS_PARAMETERS@@11@ZA ; g_FunNtCreateProcess
+	mov	ecx, DWORD PTR _g_FunNtCreateProcess
 	push	ecx
 	push	OFFSET ??_C@_0BI@CHNNDCKM@?$FLNtCreateProcess?$FN?5?30x?$CFx?$AA@FNODOBFM@
 	call	_DbgPrint
 	add	esp, 8
 
-; 264  : 
-; 265  : 
-; 266  : 	PageOff();
+; 281  : 
+; 282  : 
+; 283  : 	PageOff();
 
 	call	?PageOff@@YGXXZ				; PageOff
 
-; 267  : 	KeRaiseIrql(DISPATCH_LEVEL, &Irql);  
+; 284  : 	KeRaiseIrql(DISPATCH_LEVEL, &Irql);  
 
 	mov	cl, 2
 	call	DWORD PTR __imp_@KfRaiseIrql@4
 	mov	BYTE PTR _Irql$[ebp], al
 
-; 268  : 	RtlCopyMemory((UCHAR *)g_FunNtCreateProcess,JmpAddress,5);  
+; 285  : 	RtlCopyMemory((UCHAR *)g_FunNtCreateProcess,JmpAddress,5);  
 
-	mov	edx, DWORD PTR ?g_FunNtCreateProcess@@3P6GJPAPAX0PAX11111PAU_RTL_USER_PROCESS_PARAMETERS@@11@ZA ; g_FunNtCreateProcess
+	mov	edx, DWORD PTR _g_FunNtCreateProcess
 	mov	eax, DWORD PTR _JmpAddress$[ebp]
 	mov	DWORD PTR [edx], eax
 	mov	cl, BYTE PTR _JmpAddress$[ebp+4]
 	mov	BYTE PTR [edx+4], cl
 
-; 269  : 	KeLowerIrql(Irql);
+; 286  : 	KeLowerIrql(Irql);
 
 	mov	cl, BYTE PTR _Irql$[ebp]
 	call	DWORD PTR __imp_@KfLowerIrql@4
 
-; 270  : 	PageOn();
+; 287  : 	PageOn();
 
 	call	?PageOn@@YGXXZ				; PageOn
 
-; 271  : 
-; 272  : 	m_bHookZwCreUserProcSuccess = TRUE;
+; 288  : 
+; 289  : 	m_bHookZwCreUserProcSuccess = TRUE;
 
 	mov	edx, DWORD PTR _this$[ebp]
 	mov	BYTE PTR [edx+1], 1
 
-; 273  : 
-; 274  : 	KdPrint(("[%s] ---------------------> \n", __FUNCTION__));  
+; 290  : 
+; 291  : 	KdPrint(("[%s] ---------------------> \n", __FUNCTION__));  
 
 	push	OFFSET ??_C@_0CA@DDCEFIIE@HookHelper?3?3HookNtCreateProcess?$AA@FNODOBFM@
 	push	OFFSET ??_C@_0BO@HKHHGHLB@?$FL?$CFs?$FN?5?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?$DO?5?6?$AA@FNODOBFM@
 	call	_DbgPrint
 	add	esp, 8
 
-; 275  : 	return TRUE;
+; 292  : 	return TRUE;
 
 	mov	al, 1
 $LN2@HookNtCrea:
 
-; 276  : }
+; 293  : }
 
 	mov	ecx, DWORD PTR __$ArrayPad$[ebp]
 	xor	ecx, ebp
@@ -1319,7 +1320,7 @@ _Irql$ = -1						; size = 1
 ?UnHookObReferenceObjectByHandle@HookHelper@@QAEEXZ PROC ; HookHelper::UnHookObReferenceObjectByHandle, COMDAT
 ; _this$ = ecx
 
-; 224  : {
+; 241  : {
 
 	npad	2
 	push	ebp
@@ -1327,47 +1328,47 @@ _Irql$ = -1						; size = 1
 	sub	esp, 8
 	mov	DWORD PTR _this$[ebp], ecx
 
-; 225  : 	KdPrint(("[%s] <----------------------\n", __FUNCTION__));  
+; 242  : 	KdPrint(("[%s] <----------------------\n", __FUNCTION__));  
 
 	push	OFFSET ??_C@_0CM@HAAJIBHO@HookHelper?3?3UnHookObReferenceObj@FNODOBFM@
 	push	OFFSET ??_C@_0BO@MNJPLLPD@?$FL?$CFs?$FN?5?$DM?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?6?$AA@FNODOBFM@
 	call	_DbgPrint
 	add	esp, 8
 
-; 226  : 	KIRQL Irql;
-; 227  : 	PageOff();
+; 243  : 	KIRQL Irql;
+; 244  : 	PageOff();
 
 	call	?PageOff@@YGXXZ				; PageOff
 
-; 228  : 	KeRaiseIrql(DISPATCH_LEVEL, &Irql); //函数开头五个字节写JMP
+; 245  : 	KeRaiseIrql(DISPATCH_LEVEL, &Irql); //函数开头五个字节写JMP
 
 	mov	cl, 2
 	call	DWORD PTR __imp_@KfRaiseIrql@4
 	mov	BYTE PTR _Irql$[ebp], al
 
-; 229  : 	RtlCopyMemory((UCHAR *)ObReferenceObjectByHandle,ObReferenceObjectByHandleOriginalBytes,5);  
+; 246  : 	RtlCopyMemory((UCHAR *)ObReferenceObjectByHandle,ObReferenceObjectByHandleOriginalBytes,5);  
 
 	mov	eax, DWORD PTR __imp__ObReferenceObjectByHandle@24
-	mov	ecx, DWORD PTR ?ObReferenceObjectByHandleOriginalBytes@@3PAEA
+	mov	ecx, DWORD PTR _ObReferenceObjectByHandleOriginalBytes
 	mov	DWORD PTR [eax], ecx
-	mov	dl, BYTE PTR ?ObReferenceObjectByHandleOriginalBytes@@3PAEA+4
+	mov	dl, BYTE PTR _ObReferenceObjectByHandleOriginalBytes+4
 	mov	BYTE PTR [eax+4], dl
 
-; 230  : 	KeLowerIrql(Irql);
+; 247  : 	KeLowerIrql(Irql);
 
 	mov	cl, BYTE PTR _Irql$[ebp]
 	call	DWORD PTR __imp_@KfLowerIrql@4
 
-; 231  : 	PageOn();
+; 248  : 	PageOn();
 
 	call	?PageOn@@YGXXZ				; PageOn
 
-; 232  : 
-; 233  : 	return TRUE;
+; 249  : 
+; 250  : 	return TRUE;
 
 	mov	al, 1
 
-; 234  : }
+; 251  : }
 
 	mov	esp, ebp
 	pop	ebp
@@ -1386,7 +1387,7 @@ _newFun$ = 8						; size = 4
 ?HookObReferenceObjectByHandle@HookHelper@@QAEEPAPAX@Z PROC ; HookHelper::HookObReferenceObjectByHandle, COMDAT
 ; _this$ = ecx
 
-; 199  : {
+; 216  : {
 
 	npad	2
 	push	ebp
@@ -1397,16 +1398,16 @@ _newFun$ = 8						; size = 4
 	mov	DWORD PTR __$ArrayPad$[ebp], eax
 	mov	DWORD PTR _this$[ebp], ecx
 
-; 200  : 	KdPrint(("[%s] <----------------------\n", __FUNCTION__));  
+; 217  : 	KdPrint(("[%s] <----------------------\n", __FUNCTION__));  
 
 	push	OFFSET ??_C@_0CK@EMEBBEAG@HookHelper?3?3HookObReferenceObjec@FNODOBFM@
 	push	OFFSET ??_C@_0BO@MNJPLLPD@?$FL?$CFs?$FN?5?$DM?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?6?$AA@FNODOBFM@
 	call	_DbgPrint
 	add	esp, 8
 
-; 201  : 	KIRQL Irql;
-; 202  : 	ULONG  CR0VALUE;  
-; 203  : 	UCHAR JmpAddress[5] = {0xE9,0,0,0,0};       //跳转到HOOK函数的地址
+; 218  : 	KIRQL Irql;
+; 219  : 	ULONG  CR0VALUE;  
+; 220  : 	UCHAR JmpAddress[5] = {0xE9,0,0,0,0};       //跳转到HOOK函数的地址
 
 	mov	BYTE PTR _JmpAddress$[ebp], 233		; 000000e9H
 	mov	BYTE PTR _JmpAddress$[ebp+1], 0
@@ -1414,16 +1415,16 @@ _newFun$ = 8						; size = 4
 	mov	BYTE PTR _JmpAddress$[ebp+3], 0
 	mov	BYTE PTR _JmpAddress$[ebp+4], 0
 
-; 204  : 
-; 205  : 	RtlCopyMemory(ObReferenceObjectByHandleOriginalBytes, ObReferenceObjectByHandle, 5);
+; 221  : 
+; 222  : 	RtlCopyMemory(ObReferenceObjectByHandleOriginalBytes, ObReferenceObjectByHandle, 5);
 
 	mov	eax, DWORD PTR __imp__ObReferenceObjectByHandle@24
 	mov	ecx, DWORD PTR [eax]
-	mov	DWORD PTR ?ObReferenceObjectByHandleOriginalBytes@@3PAEA, ecx
+	mov	DWORD PTR _ObReferenceObjectByHandleOriginalBytes, ecx
 	mov	dl, BYTE PTR [eax+4]
-	mov	BYTE PTR ?ObReferenceObjectByHandleOriginalBytes@@3PAEA+4, dl
+	mov	BYTE PTR _ObReferenceObjectByHandleOriginalBytes+4, dl
 
-; 206  : 	*(ULONG  *)(JmpAddress+1)=(ULONG)NewObReferenceObjectByHandle - ((ULONG)ObReferenceObjectByHandle+5);
+; 223  : 	*(ULONG  *)(JmpAddress+1)=(ULONG)NewObReferenceObjectByHandle - ((ULONG)ObReferenceObjectByHandle+5);
 
 	mov	eax, DWORD PTR __imp__ObReferenceObjectByHandle@24
 	add	eax, 5
@@ -1431,7 +1432,7 @@ _newFun$ = 8						; size = 4
 	sub	ecx, eax
 	mov	DWORD PTR _JmpAddress$[ebp+1], ecx
 
-; 207  : 	KdPrint(("[ObReferenceObjectByHandle] :0x%x",ObReferenceObjectByHandle));
+; 224  : 	KdPrint(("[ObReferenceObjectByHandle] :0x%x",ObReferenceObjectByHandle));
 
 	mov	edx, DWORD PTR __imp__ObReferenceObjectByHandle@24
 	push	edx
@@ -1439,19 +1440,19 @@ _newFun$ = 8						; size = 4
 	call	_DbgPrint
 	add	esp, 8
 
-; 208  : 
-; 209  : 	
-; 210  : 	PageOff();
+; 225  : 
+; 226  : 	
+; 227  : 	PageOff();
 
 	call	?PageOff@@YGXXZ				; PageOff
 
-; 211  : 	KeRaiseIrql(DISPATCH_LEVEL, &Irql);  //函数开头五个字节写JMP
+; 228  : 	KeRaiseIrql(DISPATCH_LEVEL, &Irql);  //函数开头五个字节写JMP
 
 	mov	cl, 2
 	call	DWORD PTR __imp_@KfRaiseIrql@4
 	mov	BYTE PTR _Irql$[ebp], al
 
-; 212  : 	RtlCopyMemory((UCHAR *)ObReferenceObjectByHandle,JmpAddress,5);  
+; 229  : 	RtlCopyMemory((UCHAR *)ObReferenceObjectByHandle,JmpAddress,5);  
 
 	mov	eax, DWORD PTR __imp__ObReferenceObjectByHandle@24
 	mov	ecx, DWORD PTR _JmpAddress$[ebp]
@@ -1459,35 +1460,35 @@ _newFun$ = 8						; size = 4
 	mov	dl, BYTE PTR _JmpAddress$[ebp+4]
 	mov	BYTE PTR [eax+4], dl
 
-; 213  : 	KeLowerIrql(Irql);
+; 230  : 	KeLowerIrql(Irql);
 
 	mov	cl, BYTE PTR _Irql$[ebp]
 	call	DWORD PTR __imp_@KfLowerIrql@4
 
-; 214  : 	PageOn();
+; 231  : 	PageOn();
 
 	call	?PageOn@@YGXXZ				; PageOn
 
-; 215  : 
-; 216  : 	KdPrint(("[%s] ---------------------> \n", __FUNCTION__));  
+; 232  : 
+; 233  : 	KdPrint(("[%s] ---------------------> \n", __FUNCTION__));  
 
 	push	OFFSET ??_C@_0CK@EMEBBEAG@HookHelper?3?3HookObReferenceObjec@FNODOBFM@
 	push	OFFSET ??_C@_0BO@HKHHGHLB@?$FL?$CFs?$FN?5?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?$DO?5?6?$AA@FNODOBFM@
 	call	_DbgPrint
 	add	esp, 8
 
-; 217  : 
-; 218  : 	m_bHookObSuccess = TRUE;
+; 234  : 
+; 235  : 	m_bHookObSuccess = TRUE;
 
 	mov	eax, DWORD PTR _this$[ebp]
 	mov	BYTE PTR [eax], 1
 
-; 219  : 
-; 220  : 	return FALSE;
+; 236  : 
+; 237  : 	return FALSE;
 
 	xor	al, al
 
-; 221  : }
+; 238  : }
 
 	mov	ecx, DWORD PTR __$ArrayPad$[ebp]
 	xor	ecx, ebp
@@ -1505,7 +1506,7 @@ _this$ = -4						; size = 4
 ??1HookHelper@@QAE@XZ PROC				; HookHelper::~HookHelper, COMDAT
 ; _this$ = ecx
 
-; 183  : {
+; 200  : {
 
 	npad	2
 	push	ebp
@@ -1513,47 +1514,47 @@ _this$ = -4						; size = 4
 	push	ecx
 	mov	DWORD PTR _this$[ebp], ecx
 
-; 184  : 	//UnHookObReferenceObjectByHandle();
-; 185  : 	if (m_bHookObSuccess)
+; 201  : 	//UnHookObReferenceObjectByHandle();
+; 202  : 	if (m_bHookObSuccess)
 
 	mov	eax, DWORD PTR _this$[ebp]
 	movzx	ecx, BYTE PTR [eax]
 	test	ecx, ecx
 	je	SHORT $LN2@HookHelper
 
-; 186  : 	{
-; 187  : 		UnHookObReferenceObjectByHandle();
+; 203  : 	{
+; 204  : 		UnHookObReferenceObjectByHandle();
 
 	mov	ecx, DWORD PTR _this$[ebp]
 	call	?UnHookObReferenceObjectByHandle@HookHelper@@QAEEXZ ; HookHelper::UnHookObReferenceObjectByHandle
 $LN2@HookHelper:
 
-; 188  : 	}
-; 189  : 
-; 190  : 	if (m_bHookZwCreUserProcSuccess)
+; 205  : 	}
+; 206  : 
+; 207  : 	if (m_bHookZwCreUserProcSuccess)
 
 	mov	edx, DWORD PTR _this$[ebp]
 	movzx	eax, BYTE PTR [edx+1]
 	test	eax, eax
 	je	SHORT $LN1@HookHelper
 
-; 191  : 	{
-; 192  : 		UnHookNtCreateProcess();
+; 208  : 	{
+; 209  : 		UnHookNtCreateProcess();
 
 	mov	ecx, DWORD PTR _this$[ebp]
 	call	?UnHookNtCreateProcess@HookHelper@@QAEEXZ ; HookHelper::UnHookNtCreateProcess
 $LN1@HookHelper:
 
-; 193  : 	}
-; 194  : 	
-; 195  : 	KdPrint(("[%s] <----------------------\n", __FUNCTION__));  
+; 210  : 	}
+; 211  : 	
+; 212  : 	KdPrint(("[%s] <----------------------\n", __FUNCTION__));  
 
 	push	OFFSET ??_C@_0BI@HFJKMNDA@HookHelper?3?3?$HOHookHelper?$AA@FNODOBFM@
 	push	OFFSET ??_C@_0BO@MNJPLLPD@?$FL?$CFs?$FN?5?$DM?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?6?$AA@FNODOBFM@
 	call	_DbgPrint
 	add	esp, 8
 
-; 196  : }
+; 213  : }
 
 	mov	esp, ebp
 	pop	ebp
@@ -1568,7 +1569,7 @@ _this$ = -4						; size = 4
 ??0HookHelper@@QAE@XZ PROC				; HookHelper::HookHelper, COMDAT
 ; _this$ = ecx
 
-; 175  : {
+; 192  : {
 
 	npad	2
 	push	ebp
@@ -1576,24 +1577,24 @@ _this$ = -4						; size = 4
 	push	ecx
 	mov	DWORD PTR _this$[ebp], ecx
 
-; 176  : 	KdPrint(("[%s] <----------------------\n", __FUNCTION__));
+; 193  : 	KdPrint(("[%s] <----------------------\n", __FUNCTION__));
 
 	push	OFFSET ??_C@_0BH@OKKHHBGM@HookHelper?3?3HookHelper?$AA@FNODOBFM@
 	push	OFFSET ??_C@_0BO@MNJPLLPD@?$FL?$CFs?$FN?5?$DM?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?6?$AA@FNODOBFM@
 	call	_DbgPrint
 	add	esp, 8
 
-; 177  : 	m_bHookObSuccess = FALSE;
+; 194  : 	m_bHookObSuccess = FALSE;
 
 	mov	eax, DWORD PTR _this$[ebp]
 	mov	BYTE PTR [eax], 0
 
-; 178  : 	m_bHookZwCreUserProcSuccess = FALSE;
+; 195  : 	m_bHookZwCreUserProcSuccess = FALSE;
 
 	mov	ecx, DWORD PTR _this$[ebp]
 	mov	BYTE PTR [ecx+1], 0
 
-; 179  : }
+; 196  : }
 
 	mov	eax, DWORD PTR _this$[ebp]
 	mov	esp, ebp
